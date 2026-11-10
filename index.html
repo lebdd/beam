@@ -3,149 +3,251 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Claim Portal</title>
 
 <style>
-* { box-sizing: border-box; }
+:root {
+    --background: #0d1017;
+    --panel: #171c27;
+    --accent: #7289ff;
+    --text: #ffffff;
+    --muted: #a5adbd;
+}
+
+* {
+    box-sizing: border-box;
+}
 
 body {
     margin: 0;
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #101218;
-    color: white;
-    font-family: Arial, sans-serif;
+    display: grid;
+    place-items: center;
     padding: 20px;
+    background:
+        radial-gradient(circle at top, #222c49 0%, transparent 50%),
+        var(--background);
+    color: var(--text);
+    font-family: Arial, sans-serif;
 }
 
 .container {
     width: 100%;
-    max-width: 420px;
-    padding: 35px;
-    background: #1b1e27;
-    border-radius: 15px;
+    max-width: 430px;
+    padding: 38px 30px;
+    background: var(--panel);
+    border: 1px solid #30394d;
+    border-radius: 18px;
+    box-shadow: 0 20px 60px #0008;
     text-align: center;
 }
 
-p {
-    color: #adb3c2;
-    line-height: 1.6;
+.logo {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 20px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    background: #29365c;
+    color: var(--accent);
+    font-size: 28px;
+    font-weight: bold;
 }
 
-input, button {
+h1 {
+    margin: 0 0 12px;
+    font-size: 27px;
+}
+
+p {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+button, input {
     width: 100%;
-    padding: 14px;
-    margin-top: 15px;
-    border-radius: 8px;
+    border-radius: 9px;
+    padding: 15px;
     font-size: 15px;
 }
 
 input {
-    background: #11141b;
-    border: 1px solid #393e4c;
+    margin: 15px 0;
+    background: #10141e;
     color: white;
+    border: 1px solid #343d50;
+    outline: none;
+}
+
+input:focus {
+    border-color: var(--accent);
 }
 
 button {
-    background: #5865f2;
     border: none;
+    background: var(--accent);
     color: white;
     font-weight: bold;
     cursor: pointer;
+    transition: 0.2s;
 }
 
-button:hover { background: #4752c4; }
+button:hover {
+    filter: brightness(1.12);
+}
 
 button:disabled {
     opacity: 0.6;
-    cursor: wait;
+    cursor: not-allowed;
 }
 
-.hidden { display: none; }
+.hidden {
+    display: none;
+}
 
 #message {
-    margin-top: 15px;
+    margin-top: 18px;
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.footer {
+    margin-top: 25px;
+    font-size: 11px;
+    color: #687184;
 }
 </style>
 </head>
 
 <body>
-<div class="container">
 
-    <div id="agreement">
+<main class="container">
+
+    <div class="logo">C</div>
+
+    <section id="welcome">
         <h1>Welcome</h1>
-        <p>Click agree to continue to the claim portal.</p>
-        <button onclick="agree()">Agree</button>
-    </div>
 
-    <div id="claimSection" class="hidden">
+        <p>
+            Welcome to the claim portal.
+            Please review the information before continuing.
+        </p>
+
+        <button id="agreeButton" type="button">
+            Agree & Continue
+        </button>
+    </section>
+
+    <section id="claim" class="hidden">
         <h1>Claim Portal</h1>
-        <p>Type your claim value inside the text bar and hit Claim.</p>
+
+        <p>
+            Type your claim value inside the text bar
+            and hit Claim.
+        </p>
 
         <form id="claimForm">
+
             <input
-                type="text"
                 id="claimValue"
+                type="text"
                 placeholder="Enter your claim value"
                 maxlength="500"
-                required
                 autocomplete="off"
+                required
             >
-            <button id="claimButton" type="submit">Claim</button>
+
+            <button id="claimButton" type="submit">
+                Claim
+            </button>
+
         </form>
 
-        <div id="message"></div>
+        <div id="message" role="status"></div>
+    </section>
+
+    <div class="footer">
+        Secure Claim Portal
     </div>
 
-</div>
+</main>
 
 <script>
-function agree() {
-    document.getElementById("agreement").classList.add("hidden");
-    document.getElementById("claimSection").classList.remove("hidden");
-}
 
-document.getElementById("claimForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
+// ======================================
+// CONFIGURATION
+// ======================================
 
-    const input = document.getElementById("claimValue");
-    const button = document.getElementById("claimButton");
-    const message = document.getElementById("message");
+// Set this to your own backend submission URL.
+// Do not put a private Discord webhook token here.
+const SUBMISSION_URL = "/api/claim";
+
+// ======================================
+// PAGE CONTROLS
+// ======================================
+
+const welcome = document.getElementById("welcome");
+const claim = document.getElementById("claim");
+const form = document.getElementById("claimForm");
+const input = document.getElementById("claimValue");
+const button = document.getElementById("claimButton");
+const message = document.getElementById("message");
+
+document.getElementById("agreeButton").addEventListener("click", () => {
+    welcome.classList.add("hidden");
+    claim.classList.remove("hidden");
+    input.focus();
+});
+
+// ======================================
+// CLAIM SUBMISSION
+// ======================================
+
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
     const value = input.value.trim();
 
-    if (!value) return;
+    if (!value) {
+        message.textContent = "Please enter a claim value.";
+        return;
+    }
 
     button.disabled = true;
-    message.textContent = "Submitting...";
+    button.textContent = "Submitting...";
+    message.textContent = "";
 
     try {
-        const response = await fetch("/api/claim", {
+        const response = await fetch(SUBMISSION_URL, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ value })
+            body: JSON.stringify({
+                value: value
+            })
         });
 
-        const result = await response.json();
-
         if (!response.ok) {
-            throw new Error(result.error || "Submission failed");
+            throw new Error("Server returned HTTP " + response.status);
         }
 
-        message.textContent = "Claim submitted successfully!";
+        message.textContent = "Your claim was submitted successfully.";
         input.value = "";
 
     } catch (error) {
-        message.textContent = "Error: " + error.message;
+        console.error("Submission error:", error);
+        message.textContent =
+            "Submission failed. Please check the submission endpoint.";
     } finally {
         button.disabled = false;
+        button.textContent = "Claim";
     }
 });
+
 </script>
 
 </body>
