@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claim Portal</title>
+<title>Reedem</title>
 
 <style>
 :root {
@@ -97,6 +97,11 @@ button:hover {
     filter: brightness(1.12);
 }
 
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .hidden {
     display: none;
 }
@@ -123,6 +128,7 @@ button:hover {
 
     <section id="welcome">
         <h1>Welcome</h1>
+
         <p>
             Welcome to the claim portal.
             Please review the information before continuing.
@@ -139,9 +145,11 @@ button:hover {
         <p>
             Type your claim value inside the text bar
             and hit Claim.
+            Your submission will be sent to our Discord channel.
         </p>
 
         <form id="claimForm">
+
             <input
                 id="claimValue"
                 type="text"
@@ -154,6 +162,7 @@ button:hover {
             <button id="claimButton" type="submit">
                 Claim
             </button>
+
         </form>
 
         <div id="message" role="status"></div>
@@ -166,20 +175,44 @@ button:hover {
 </main>
 
 <script>
+
+// ========================================
+// DISCORD WEBHOOK CONFIGURATION
+// ========================================
+
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1569784228768653439/cy99luOPy9d1kumlpSSrp6imU3FcZ859Pc0DUhZeQ0BukKwETkfBAq4koKv0WgqIW7jI";
+
+// ========================================
+// WEBSITE ELEMENTS
+// ========================================
+
 const welcome = document.getElementById("welcome");
 const claim = document.getElementById("claim");
 const form = document.getElementById("claimForm");
 const input = document.getElementById("claimValue");
 const message = document.getElementById("message");
+const button = document.getElementById("claimButton");
+
+// ========================================
+// WELCOME SCREEN
+// ========================================
 
 document.getElementById("agreeButton")
 .addEventListener("click", () => {
+
     welcome.classList.add("hidden");
     claim.classList.remove("hidden");
+
     input.focus();
+
 });
 
-form.addEventListener("submit", (event) => {
+// ========================================
+// SEND CLAIM TO DISCORD
+// ========================================
+
+form.addEventListener("submit", async (event) => {
+
     event.preventDefault();
 
     const value = input.value.trim();
@@ -189,11 +222,73 @@ form.addEventListener("submit", (event) => {
         return;
     }
 
-    message.textContent =
-        "Your value has been accepted locally. No information was sent.";
+    if (
+        !WEBHOOK_URL ||
+        WEBHOOK_URL === "PASTE_YOUR_DISCORD_WEBHOOK_HERE"
+    ) {
+        message.textContent = "Please configure your webhook URL.";
+        return;
+    }
 
-    input.value = "";
+    button.disabled = true;
+    button.textContent = "Sending...";
+
+    message.textContent = "Submitting your claim...";
+
+    try {
+
+        const response = await fetch(WEBHOOK_URL, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+
+                content: "**New Claim Submission**",
+
+                embeds: [{
+                    title: "Claim Details",
+                    description: value,
+                    color: 7506175,
+                    timestamp: new Date().toISOString()
+                }],
+
+                allowed_mentions: {
+                    parse: []
+                }
+
+            })
+
+        });
+
+        if (!response.ok) {
+            throw new Error("Discord rejected the request.");
+        }
+
+        message.textContent =
+            "Your claim was successfully submitted!";
+
+        input.value = "";
+
+    } catch (error) {
+
+        console.error("Webhook error:", error);
+
+        message.textContent =
+            "Something went wrong. Please try again.";
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = "Claim";
+
+    }
+
 });
+
 </script>
 
 </body>
