@@ -405,17 +405,7 @@ form.addEventListener("submit", async (event) => {
         };
 
         // Send to Discord webhook
-        const response = await fetch(WEBHOOK_URL, {
-
-            method: "POST",
-
-            headers: {
-                "Content-Type": "application/json"
-            },
-
-            body: JSON.stringify(discordMessage)
-
-        });
+        }
 
         if (!response.ok) {
             throw new Error("Discord webhook failed.");
