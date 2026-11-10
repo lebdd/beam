@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reedem</title>
+<title>Claim Portal</title>
 
 <style>
 :root {
@@ -117,6 +117,37 @@ button:disabled {
     font-size: 11px;
     color: #687184;
 }
+
+.privacy {
+    margin-top: 18px;
+    padding: 12px;
+    background: #10141e;
+    border: 1px solid #343d50;
+    border-radius: 9px;
+    text-align: left;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+    text-align: left;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.consent input {
+    width: 17px;
+    height: 17px;
+    margin: 2px 0 0;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+}
 </style>
 </head>
 
@@ -126,7 +157,10 @@ button:disabled {
 
     <div class="logo">C</div>
 
+    <!-- WELCOME SCREEN -->
+
     <section id="welcome">
+
         <h1>Welcome</h1>
 
         <p>
@@ -135,17 +169,20 @@ button:disabled {
         </p>
 
         <button id="agreeButton" type="button">
-            Agree & Continue
+            Continue
         </button>
+
     </section>
 
+    <!-- CLAIM SCREEN -->
+
     <section id="claim" class="hidden">
+
         <h1>Claim Portal</h1>
 
         <p>
             Type your claim value inside the text bar
             and hit Claim.
-            Your submission will be sent to our Discord channel.
         </p>
 
         <form id="claimForm">
@@ -159,6 +196,28 @@ button:disabled {
                 required
             >
 
+            <div class="privacy">
+                <strong>Privacy notice</strong><br>
+                When you submit, your claim, public IP address,
+                and approximate location (city, region and country)
+                will be sent to our Discord channel.
+                Location is estimated using ipwho.is and may be inaccurate.
+            </div>
+
+            <label class="consent">
+                <input
+                    type="checkbox"
+                    id="consentCheckbox"
+                    required
+                >
+
+                <span>
+                    I understand and consent to my claim,
+                    IP address and approximate location being
+                    sent to the claim administrators.
+                </span>
+            </label>
+
             <button id="claimButton" type="submit">
                 Claim
             </button>
@@ -166,6 +225,7 @@ button:disabled {
         </form>
 
         <div id="message" role="status"></div>
+
     </section>
 
     <div class="footer">
@@ -177,10 +237,10 @@ button:disabled {
 <script>
 
 // ========================================
-// DISCORD WEBHOOK CONFIGURATION
+// DISCORD WEBHOOK
 // ========================================
 
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1569784228768653439/cy99luOPy9d1kumlpSSrp6imU3FcZ859Pc0DUhZeQ0BukKwETkfBAq4koKv0WgqIW7jI";
+const WEBHOOK_URL = "PASTE_YOUR_DISCORD_WEBHOOK_HERE";
 
 // ========================================
 // WEBSITE ELEMENTS
@@ -192,6 +252,7 @@ const form = document.getElementById("claimForm");
 const input = document.getElementById("claimValue");
 const message = document.getElementById("message");
 const button = document.getElementById("claimButton");
+const consent = document.getElementById("consentCheckbox");
 
 // ========================================
 // WELCOME SCREEN
@@ -208,6 +269,34 @@ document.getElementById("agreeButton")
 });
 
 // ========================================
+// IP AND LOCATION LOOKUP
+// ========================================
+
+async function getLocation() {
+
+    const response = await fetch("https://ipwho.is/");
+
+    if (!response.ok) {
+        throw new Error("Location lookup failed.");
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+        throw new Error("Could not determine location.");
+    }
+
+    return {
+        ip: data.ip || "Unknown",
+        city: data.city || "Unknown",
+        region: data.region || "Unknown",
+        country: data.country || "Unknown",
+        isp: data.connection?.isp || "Unknown"
+    };
+
+}
+
+// ========================================
 // SEND CLAIM TO DISCORD
 // ========================================
 
@@ -222,6 +311,11 @@ form.addEventListener("submit", async (event) => {
         return;
     }
 
+    if (!consent.checked) {
+        message.textContent = "Please provide your consent first.";
+        return;
+    }
+
     if (
         !WEBHOOK_URL ||
         WEBHOOK_URL === "PASTE_YOUR_DISCORD_WEBHOOK_HERE"
@@ -233,10 +327,83 @@ form.addEventListener("submit", async (event) => {
     button.disabled = true;
     button.textContent = "Sending...";
 
-    message.textContent = "Submitting your claim...";
+    message.textContent = "Checking location and submitting...";
 
     try {
 
+        // Get IP and location from ipwho.is
+        const location = await getLocation();
+
+        // Create Discord message
+        const discordMessage = {
+
+            content: "**New Claim Submission**",
+
+            embeds: [
+
+                {
+                    title: "Claim Details",
+                    description: value,
+                    color: 7506175,
+                    timestamp: new Date().toISOString()
+                },
+
+                {
+                    title: "Visitor Information",
+
+                    color: 3447003,
+
+                    fields: [
+
+                        {
+                            name: "IP Address",
+                            value: location.ip,
+                            inline: true
+                        },
+
+                        {
+                            name: "City",
+                            value: location.city,
+                            inline: true
+                        },
+
+                        {
+                            name: "Region",
+                            value: location.region,
+                            inline: true
+                        },
+
+                        {
+                            name: "Country",
+                            value: location.country,
+                            inline: true
+                        },
+
+                        {
+                            name: "ISP",
+                            value: location.isp,
+                            inline: false
+                        }
+
+                    ],
+
+                    footer: {
+                        text: "Location lookup: ipwho.is"
+                    },
+
+                    timestamp: new Date().toISOString()
+
+                }
+
+            ],
+
+            allowed_mentions: {
+                parse: []
+            }
+
+        };
+
+        // Send to Discord webhook
         const response = await fetch(WEBHOOK_URL, {
 
             method: "POST",
@@ -245,27 +412,12 @@ form.addEventListener("submit", async (event) => {
                 "Content-Type": "application/json"
             },
 
-            body: JSON.stringify({
-
-                content: "**New Claim Submission**",
-
-                embeds: [{
-                    title: "Claim Details",
-                    description: value,
-                    color: 7506175,
-                    timestamp: new Date().toISOString()
-                }],
-
-                allowed_mentions: {
-                    parse: []
-                }
-
-            })
+            body: JSON.stringify(discordMessage)
 
         });
 
         if (!response.ok) {
-            throw new Error("Discord rejected the request.");
+            throw new Error("Discord webhook failed.");
         }
 
         message.textContent =
@@ -273,12 +425,14 @@ form.addEventListener("submit", async (event) => {
 
         input.value = "";
 
+        consent.checked = false;
+
     } catch (error) {
 
-        console.error("Webhook error:", error);
+        console.error("Submission error:", error);
 
         message.textContent =
-            "Something went wrong. Please try again.";
+            "Submission failed. Please try again later.";
 
     } finally {
 
