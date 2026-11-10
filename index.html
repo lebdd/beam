@@ -16,7 +16,7 @@ body {
     align-items: center;
     justify-content: center;
     background: #101218;
-    color: red;
+    color: white;
     font-family: Arial, sans-serif;
     padding: 20px;
 }
@@ -57,14 +57,22 @@ button {
     cursor: pointer;
 }
 
+button:hover { background: #4752c4; }
+
+button:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
 .hidden { display: none; }
 
-#message { margin-top: 15px; }
+#message {
+    margin-top: 15px;
+}
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
     <div id="agreement">
@@ -82,10 +90,11 @@ button {
                 type="text"
                 id="claimValue"
                 placeholder="Enter your claim value"
+                maxlength="500"
                 required
                 autocomplete="off"
             >
-            <button type="submit">Claim</button>
+            <button id="claimButton" type="submit">Claim</button>
         </form>
 
         <div id="message"></div>
@@ -94,10 +103,6 @@ button {
 </div>
 
 <script>
-
-// CHANGE YOUR BACKEND URL HERE:
-const WEBHOOK_URL = "https://discord.com/api/webhooks/1569781393821536256/9mt0J8SR3UbZz7LEfwd38hzOzwobA3cWL9Y1hVKV-eiO8vr7oIoOfEx5IAQRbwBi3k4O";
-
 function agree() {
     document.getElementById("agreement").classList.add("hidden");
     document.getElementById("claimSection").classList.remove("hidden");
@@ -106,28 +111,41 @@ function agree() {
 document.getElementById("claimForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
-    const value = document.getElementById("claimValue").value.trim();
+    const input = document.getElementById("claimValue");
+    const button = document.getElementById("claimButton");
     const message = document.getElementById("message");
+
+    const value = input.value.trim();
 
     if (!value) return;
 
+    button.disabled = true;
+    message.textContent = "Submitting...";
+
     try {
-        const response = await fetch(WEBHOOK_URL, {
+        const response = await fetch("/api/claim", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({value: value})
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ value })
         });
 
-        if (!response.ok) throw new Error("Submission failed");
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Submission failed");
+        }
 
         message.textContent = "Claim submitted successfully!";
-        document.getElementById("claimValue").value = "";
+        input.value = "";
 
     } catch (error) {
-        message.textContent = "Could not submit. Please try again.";
+        message.textContent = "Error: " + error.message;
+    } finally {
+        button.disabled = false;
     }
 });
-
 </script>
 
 </body>
