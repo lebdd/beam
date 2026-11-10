@@ -3,12 +3,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MMM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claim Portal</title>
 
 <style>
 :root {
-    --background: #0d1017;
+    --bg: #0d1017;
     --panel: #171c27;
     --accent: #7289ff;
     --text: #ffffff;
@@ -22,12 +22,11 @@
 body {
     margin: 0;
     min-height: 100vh;
-    display: grid;
-    place-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding: 20px;
-    background:
-        radial-gradient(circle at top, #222c49 0%, transparent 50%),
-        var(--background);
+    background: radial-gradient(circle at top, #222c49, var(--bg) 65%);
     color: var(--text);
     font-family: Arial, sans-serif;
 }
@@ -67,15 +66,15 @@ p {
     line-height: 1.7;
 }
 
-button, input {
+input, button {
     width: 100%;
-    border-radius: 9px;
     padding: 15px;
+    margin-top: 15px;
+    border-radius: 9px;
     font-size: 15px;
 }
 
 input {
-    margin: 15px 0;
     background: #10141e;
     color: white;
     border: 1px solid #343d50;
@@ -92,16 +91,10 @@ button {
     color: white;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.2s;
 }
 
 button:hover {
     filter: brightness(1.12);
-}
-
-button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
 }
 
 .hidden {
@@ -111,7 +104,7 @@ button:disabled {
 #message {
     margin-top: 18px;
     font-size: 14px;
-    color: var(--muted);
+    line-height: 1.5;
 }
 
 .footer {
@@ -130,7 +123,6 @@ button:disabled {
 
     <section id="welcome">
         <h1>Welcome</h1>
-
         <p>
             Welcome to the claim portal.
             Please review the information before continuing.
@@ -150,7 +142,6 @@ button:disabled {
         </p>
 
         <form id="claimForm">
-
             <input
                 id="claimValue"
                 type="text"
@@ -163,91 +154,46 @@ button:disabled {
             <button id="claimButton" type="submit">
                 Claim
             </button>
-
         </form>
 
         <div id="message" role="status"></div>
     </section>
 
     <div class="footer">
-        Secure Claim Portal
+        Claim Portal
     </div>
 
 </main>
 
 <script>
-
-// ======================================
-// CONFIGURATION
-// ======================================
-
-// Set this to your own backend submission URL.
-// Do not put a private Discord webhook token here.
-const SUBMISSION_URL = "/api/claim";
-
-// ======================================
-// PAGE CONTROLS
-// ======================================
-
 const welcome = document.getElementById("welcome");
 const claim = document.getElementById("claim");
 const form = document.getElementById("claimForm");
 const input = document.getElementById("claimValue");
-const button = document.getElementById("claimButton");
 const message = document.getElementById("message");
 
-document.getElementById("agreeButton").addEventListener("click", () => {
+document.getElementById("agreeButton")
+.addEventListener("click", () => {
     welcome.classList.add("hidden");
     claim.classList.remove("hidden");
     input.focus();
 });
 
-// ======================================
-// CLAIM SUBMISSION
-// ======================================
-
-form.addEventListener("submit", async (event) => {
+form.addEventListener("submit", (event) => {
     event.preventDefault();
 
     const value = input.value.trim();
 
     if (!value) {
-        message.textContent = "Please enter a claim value.";
+        message.textContent = "Please enter a value.";
         return;
     }
 
-    button.disabled = true;
-    button.textContent = "Submitting...";
-    message.textContent = "";
+    message.textContent =
+        "Your value has been accepted locally. No information was sent.";
 
-    try {
-        const response = await fetch(SUBMISSION_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                value: value
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error("Server returned HTTP " + response.status);
-        }
-
-        message.textContent = "Your claim was submitted successfully.";
-        input.value = "";
-
-    } catch (error) {
-        console.error("Submission error:", error);
-        message.textContent =
-            "Submission failed. Please check the submission endpoint.";
-    } finally {
-        button.disabled = false;
-        button.textContent = "Claim";
-    }
+    input.value = "";
 });
-
 </script>
 
 </body>
